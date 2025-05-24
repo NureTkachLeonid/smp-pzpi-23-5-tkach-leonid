@@ -1,0 +1,162 @@
+#!/bin/bash
+
+show_help() {
+    echo "Usage: script.sh [--help | --version] | [[-q|--quiet] [академ_група] файл_із_cist.csv]"
+    echo ""
+    echo "Options:"
+    echo "  --help      Показати довідку"
+    echo "  --version   Показати інформацію про версію"
+    echo "  -q, --quiet Приховати стандартний вивід"
+}
+
+show_version() {
+    echo "Script version 1.0.0"
+}
+
+quiet_mode=false
+csv_file=""
+academy_group=""
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        --help)
+            show_help
+            exit 0
+            ;;
+        --version)
+            show_version
+            exit 0
+            ;;
+        -q|--quiet)
+            quiet_mode=true
+            shift
+            ;;
+        *)
+            if [[ -z "$academy_group" ]]; then
+                academy_group="$1"
+            elif [[ -z "$csv_file" ]]; then
+                csv_file="$1"
+            else
+                echo "Невідома опція або занадто багато параметрів."
+                show_help
+                exit 1
+            fi
+            shift
+            ;;
+    esac
+done
+
+if [ -z "$csv_file" ]; then
+    echo "Доступні CSV-файли:"
+    select csv_file_choice in TimeTable_*.csv; do
+        if [ -n "$csv_file_choice" ]; then
+            csv_file="$csv_file_choice"
+        break
+        fi
+        echo "Невірний вибір. Спробуйте ще раз."
+    done
+fi
+
+groups=$(iconv -f windows-1251 -t utf-8 "$csv_file" | sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' | sed 's/^\xEF\xBB\xBF//' | sed 's/"//g' | awk -F',' 'NR > 1 { split($1, parts, " - "); print parts[1] }' | sort | uniq)
+
+if [ -z "$groups" ]; then
+    echo "Групи не знайдено."
+    exit 1
+fi
+
+if [ -z "$academy_group" ]; then
+    echo "Оберіть групу:"
+    select group_choice in $groups; do
+        if [ -n "$group_choice" ]; then
+            group="$group_choice"
+            break
+        fi
+        echo "Невірний вибір. Спробуйте ще раз."
+    done
+else
+    group="$academy_group"
+fi
+output_file="Google_${csv_file}"
+
+echo "\"Subject\",\"Start Date\",\"Start Time\",\"End Date\",\"End Time\",\"Description\"" > "$output_file"
+
+iconv -f windows-1251 -t utf-8 "$csv_file" | 
+sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' -e 's/^\xEF\xBB\xBF//' | 
+awk -v grp="$group" '
+BEGIN { 
+    FS="\",\""; 
+    OFS="|"; 
+}
+
+
+function sortkey(date, time,   d, m, y, h, min) {
+    split(date, dp, ".")
+    split(time, tp, ":")
+    return sprintf("%04d%02d%02d%02d%02d", dp[3], dp[2], dp[1], tp[1], tp[2])
+}
+
+NR > 1 {
+    gsub(/^"/, "", $1)
+    gsub(/"$/, "", $(NF))
+    
+    split($1, parts, " - ")
+    group_name = parts[1]
+    lesson_type = parts[2]
+    
+    if (group_name == grp) {
+        key = sortkey($2, $3)
+        
+        print key, lesson_type, $2, $3, $4, $5, $12
+    }
+}
+' | sort -t'|' -k1,1 | 
+awk -F'|' -v quiet="$quiet_mode" '
+BEGIN { 
+    OFS=","; 
+}
+
+function ampm(time_str,  h, m, ampm_val) {
+    split(time_str, t, ":")
+    h = t[1]+0
+    m = t[2]+0
+    ampm_val = (h >= 12) ? "PM" : "AM"
+    if (h == 0) h = 12
+    else if (h > 12) h -= 12
+    return sprintf("%02d:%02d %s", h, m, ampm_val)
+}
+
+function format_date(d,   p) {
+    split(d, p, ".")
+    return sprintf("%02d/%02d/%04d", p[2], p[1], p[3])
+}
+
+{
+    type = $2
+    raw_date = $3
+    
+    split(raw_date, d, ".")
+    date_key = sprintf("%04d%02d%02d", d[3], d[2], d[1])
+    combo_key = type "-" date_key
+
+    if (!(combo_key in combo_seen)) {
+        type_date_count[type]++
+        combo_seen[combo_key] = type_date_count[type]
+    }
+
+    number = combo_seen[combo_key]
+
+    formatted_output = "\"" type "; №" number "\"," \
+          "\"" format_date($3) "\"," \
+          "\"" ampm($4) "\"," \
+          "\"" format_date($5) "\"," \
+          "\"" ampm($6) "\"," \
+          "\"" $7 "\""
+
+    if (quiet != "true") print formatted_output > "/dev/stdout"
+    print formatted_output
+}
+' >> "$output_file"
+
+if ! $quiet_mode; then
+    echo "CSV збережено як: $output_file"
+fi
