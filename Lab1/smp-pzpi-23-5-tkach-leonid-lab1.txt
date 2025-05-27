@@ -41,11 +41,205 @@
 
 ОПИС ВИКОНАНОЇ РОБОТИ
 
-У рядках 1-14 скрипта визначається інтерпретатор #!/bin/bash та реалізовано дві допоміжні функції: show_help та show_version.
-Функція show_help (рядки 3-10) виводить довідкову інформацію про синтаксис виклику скрипта та доступні опції (--help, --version, -q, --quiet).
-Функція show_version (рядки 12-14) виводить інформацію про версію скрипта ("Script version 1.0.0").
+У рядках 1–13 визначається інтерпретатор #!/bin/bash та реалізовано дві допоміжні функції: show_help та show_version. Функція show_help виводить довідкову інформацію про синтаксис виклику скрипта та доступні опції (--help, --version, -q, --quiet). Функція show_version виводить версію скрипта ("Script version 1.0.0").
+ 1  #!/bin/bash
+ 2  
+ 3  show_help() {
+ 4      echo "Usage: script.sh [--help | --version] | [[-q|--quiet] [академ_група] файл_із_cist.csv]"
+ 5      echo ""
+ 6      echo "Options:"
+ 7      echo "  --help      Показати довідку"
+ 8      echo "  --version   Показати інформацію про версію"
+ 9      echo "  -q, --quiet Приховати стандартний вивід"
+10  }
+11  
+12  show_version() {
+13      echo "Script version 1.0.0"
+14  }
 
-Bash
+У рядках 16–38 ініціалізуються глобальні змінні (quiet_mode, csv_file, academy_group) та обробляються аргументи командного рядка. Цикл while та конструкція case аналізують опції: --help викликає show_help, --version – show_version, -q/--quiet встановлює quiet_mode у true. Інші аргументи перевіряються регулярними виразами: академічна група відповідає формату ПЗПІ-[0-9]+-[0-9]+, CSV-файл – TimeTable_[0-9]+[0-9]+[0-9]+.csv. При невідповідності виводиться помилка та довідка.
+16  quiet_mode=false
+17  csv_file=""
+18  academy_group=""
+19  
+20  while [[ $# -gt 0 ]]; do
+21      case $1 in
+22          --help)
+23              show_help
+24              exit 0
+25              ;;
+26          --version)
+27              show_version
+28              exit 0
+29              ;;
+30          -q|--quiet)
+31              quiet_mode=true
+32              shift
+33              ;;
+34          *)
+35              if [[ "$1" =~ ^ПЗПІ-[0-9]+-[0-9]+$ ]]; then
+36                  academy_group="$1"
+37              elif [[ "$1" =~ ^TimeTable_[0-9]+_[0-9]+_[0-9]+\.csv$ ]]; then
+38                  csv_file="$1"
+39              else
+40                  echo "Невідома опція або занадто багато параметрів."
+41                  show_help
+42                  exit 1
+43              fi
+44              shift
+45              ;;
+46      esac
+47  done
+
+У рядках 49–58 реалізовано інтерактивний вибір CSV-файлу. Якщо csv_file порожня, виводиться повідомлення "Доступні CSV-файли:", і команда select пропонує обрати файл із шаблону TimeTable_*.csv. Обране ім’я присвоюється csv_file.
+49  if [ -z "$csv_file" ]; then
+50      echo "Доступні CSV-файли:"
+51      select csv_file_choice in TimeTable_*.csv; do
+52          if [ -n "$csv_file_choice" ]; then
+53              csv_file="$csv_file_choice"
+54              break
+55          fi
+56          echo "Невірний вибір. Спробуйте ще раз."
+57      done
+58  fi
+
+У рядках 60–66 витягується список унікальних академічних груп. Команда iconv конвертує кодування з windows-1251 у utf-8, sed нормалізує кінці рядків і видаляє лапки, awk (починаючи з другого рядка, NR > 1) виокремлює назву групи з першого поля. Список сортується за допомогою sort -V (версійне сортування) і очищається від дублікатів (uniq). Якщо groups порожній, виводиться повідомлення про помилку, і скрипт завершується.
+60  groups=$(iconv -f windows-1251 -t utf-8 "$csv_file" | 
+61           sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' |
+62           sed 's/"//g' |
+63           awk -F',' 'NR > 1 { split($1, parts, " - "); print parts[1] }' |
+64           sort -V | uniq)
+65  
+66  if [ -z "$groups" ]; then
+67      echo "Групи не знайдено."
+68      exit 1
+69  fi
+
+У рядках 71–82 реалізовано вибір академічної групи. Якщо academy_group порожня, select пропонує обрати групу зі списку groups. Інакше використовується значення academy_group, присвоєне змінній group.
+71  if [ -z "$academy_group" ]; then
+72      echo "Оберіть групу:"
+73      select group_choice in $groups; do
+74          if [ -n "$group_choice" ]; then
+75              group="$group_choice"
+76              break
+77          fi
+78          echo "Невірний вибір. Спробуйте ще раз."
+79      done
+80  else
+81      group="$academy_group"
+82  fi
+
+У рядках 83–85 формується ім’я вихідного файлу (output_file) з префіксом Google_ та записується рядок заголовків для CSV-файлу Google Календаря.
+83  output_file="Google_${csv_file}"
+84  
+85  echo "\"Subject\",\"Start Date\",\"Start Time\",\"End Date\",\"End Time\",\"Description\"" > "$output_file"
+
+Основний конвеєр обробки даних (рядки 87–134) починається з iconv для конвертації кодування та sed для нормалізації кінців рядків.
+87  iconv -f windows-1251 -t utf-8 "$csv_file" | 
+88  sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' | 
+
+Перший awk (рядки 89–115) встановлює роздільники FS="","" та OFS="|". Функція sortkey створює ключ сортування (РРРРММДДГГХХ). Скрипт пропускає перший рядок (NR > 1), видаляє лапки, виокремлює групу (group_name) та тип заняття (lesson_type). Якщо group_name відповідає обраній групі, виводиться ключ, тип, дати, час і опис. Дані сортуються за ключем (sort -t'|' -k1,1).
+89  awk -v grp="$group" '
+90  BEGIN { 
+91      FS="\",\""; 
+92      OFS="|"; 
+93  }
+94  
+95  function sortkey(date, time) {
+96      split(date, dp, ".")
+97      split(time, tp, ":")
+98      return sprintf("%04d%02d%02d%02d%02d", dp[3], dp[2], dp[1], tp[1], tp[2])
+99  }
+100
+101 NR > 1 { 
+102 gsub(/^"/, "", $1) 
+103 gsub(/"$/, "", $(NF)) 
+104
+105 split($1, parts, " - ") 
+106 group_name = parts[1] 
+107 lesson_type = parts[2] 
+108
+109 if (group_name == grp) { 110 key = sortkey($2, $3) 
+111
+112 print key, lesson_type, $2, $3, $4, $5, $12 
+113 } 
+114 } 
+115 ' | sort -t'|' -k1,1 |
+
+Другий awk (рядки 116–164) з FS='|' та OFS="," форматує дані. Функції ampm та format_date перетворюють час (12-годинний AM/PM) і дату (MM/DD/YYYY). Формується ключ combo_key (тип-дата) для нумерації. Лічильник type_date_count[type] інкрементується, combo_seen[combo_key] зберігає номер заняття. Рядок formatted_output записується у output_file через print ... >> output_file. Якщо quiet_mode не активовано, виводиться у stdout.
+116 awk -F'|' -v quiet="$quiet_mode" ' 
+117 BEGIN { 
+118 OFS=","; 
+119 } 
+120
+121 function ampm(time_str, h, m, ampm_val) { 
+122 split(time_str, t, ":") 
+123 h = t[1]+0 124 m = t[2]+0 
+125 ampm_val = (h >= 12) ? "PM" : "AM" 
+126 if (h == 0) h = 12 
+127 else if (h > 12) h -= 12 
+128 return sprintf("%02d:%02d %s", h, m, ampm_val) 
+129 } 
+130
+131 function format_date(d, p) { 
+132 split(d, p, ".") 
+133 return sprintf("%02d/%02d/%04d", p[2], p[1], p[3]) 134 } 
+135
+136 { 
+137 type = $2 
+138 raw_date = $3 
+139
+140 split(raw_date, d, ".") 
+141 date_key = sprintf("%04d%02d%02d", d[3], d[2], d[1]) 
+142 combo_key = type "-" date_key 
+143
+144 if (!(combo_key in combo_seen)) { 
+145 type_date_count[type]++ 
+146 combo_seen[combo_key] = type_date_count[type] 
+147 } 
+148
+149 number = combo_seen[combo_key] 
+150
+151 formatted_output = """ type "; №" number ""," 
+152 """ format_date($3) ""," 
+153 """ ampm($4) ""," 
+154 """ format_date($5) ""," 
+155 """ ampm($6) ""," 
+156 """ $7 """ 
+157
+158 print formatted_output >> output_file 
+159
+160 if (quiet != "true") { 
+161 print formatted_output 
+162 } 
+163 } 
+164 ' output_file="$output_file"
+
+У рядках 166–168, якщо quiet_mode не увімкнено, виводиться повідомлення про успішне створення файлу.
+166 if ! $quiet_mode; then 
+167 echo "CSV збережено як: $output_file" 
+168 fi
+
+
+ВИСНОВКИ
+
+Під час виконання лабораторної роботи я створив Bash-скрипт, який обробляє CSV-розклад занять, дозволяє зручно вибирати групу та файл, обробляє кодування, форматує дані для Google Calendar та підтримує ключі для керування виводом. Я навчився використовувати iconv, select, awk, sort, sed і глибше зрозумів обробку даних у Bash.
+
+ДОДАТОК А
+Відеозапис
+
+https://youtu.be/l876XjpWDpQ
+Таймкоди відео:
+00:00 – Вступне представлення
+00:13 – Пояснення коду скрипту
+13:31 – Демонстрація роботи скрипту
+13:59 – Додавання події до Google Calendar
+
+ДОДАТОК Б
+Програмний код
+Повний код скрипта pzpi-23-5-tkach-leonid-lab1-code:
+
+GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab1/pzpi-23-5-tkach-leonid-lab1-code
 
   1  #!/bin/bash
   2  
@@ -56,364 +250,162 @@ Bash
   7      echo "  --help      Показати довідку"
   8      echo "  --version   Показати інформацію про версію"
   9      echo "  -q, --quiet Приховати стандартний вивід"
- 10  }
- 11  
- 12  show_version() {
- 13      echo "Script version 1.0.0"
- 14  }
-
-У рядках 16-47 відбувається ініціалізація глобальних змінних (quiet_mode, csv_file, academy_group) та розбір аргументів командного рядка. За допомогою циклу while та конструкції case обробляються передані опції. Опція --help викликає функцію show_help, --version – функцію show_version. Опція -q або --quiet встановлює змінну quiet_mode в true. Інші аргументи послідовно присвоюються змінним academy_group та csv_file. Якщо передано більше двох таких аргументів, виводиться повідомлення про помилку та довідка.
- 16  quiet_mode=false
- 17  csv_file=""
- 18  academy_group=""
- 19  
- 20  while [[ "$#" -gt 0 ]]; do
- 21      case "$1" in
- 22          --help)
- 23              show_help
- 24              exit 0
- 25              ;;
- 26          --version)
- 27              show_version
- 28              exit 0
- 29              ;;
- 30          -q|--quiet)
- 31              quiet_mode=true
- 32              shift
- 33              ;;
- 34          *)
- 35              if [[ -z "$academy_group" ]]; then
- 36                  academy_group="$1"
- 37              elif [[ -z "$csv_file" ]]; then
- 38                  csv_file="$1"
- 39              else
- 40                  echo "Невідома опція або занадто багато параметрів."
- 41                  show_help
- 42                  exit 1
- 43              fi
- 44              shift
- 45              ;;
- 46      esac
- 47  done
-
-У рядках 49-58 реалізовано інтерактивний вибір CSV-файлу. Якщо змінна csv_file порожня (тобто файл не було передано як аргумент), скрипт виводить повідомлення "Доступні CSV-файли:" та за допомогою команди select пропонує користувачеві обрати один із файлів, що відповідають шаблону TimeTable_*.csv, у поточній директорії. Обране ім'я файлу присвоюється змінній csv_file.
-
- 49  if [ -z "$csv_file" ]; then
- 50      echo "Доступні CSV-файли:"
- 51      select csv_file_choice in TimeTable_*.csv; do
- 52          if [ -n "$csv_file_choice" ]; then
- 53              csv_file="$csv_file_choice"
- 54          break
- 55          fi
- 56          echo "Невірний вибір. Спробуйте ще раз."
- 57      done
- 58  fi
-
-У рядках 60-65 відбувається видобуток унікальних назв академічних груп із зазначеного CSV-файлу. Команда iconv конвертує кодування файлу з windows-1251 в utf-8. Потім sed нормалізує кінці рядків, видаляє BOM (Byte Order Mark) та всі подвійні лапки. Далі awk з роздільником полів , обробляє рядки, починаючи з другого (NR > 1), розділяє перше поле за допомогою " - " і виводить назву групи. Отриманий список груп сортується (sort), і з нього видаляються дублікати (uniq). Якщо в результаті змінна groups порожня, виводиться повідомлення "Групи не знайдено." і скрипт завершує роботу.
-
- 60  groups=$(iconv -f windows-1251 -t utf-8 "$csv_file" | sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' | sed 's/^\xEF\xBB\xBF//' | sed 's/"//g' | awk -F',' 'NR > 1 { split($1, parts, " - "); print parts[1] }' | sort | uniq)
- 61  
- 62  if [ -z "$groups" ]; then
- 63      echo "Групи не знайдено."
- 64      exit 1
- 65  fi
-
-У рядках 67-78 реалізовано вибір академічної групи. Якщо змінна academy_group порожня, користувачеві за допомогою select пропонується обрати групу зі списку $groups (змінна group_choice використовується для вибору, а потім присвоюється змінній group). В іншому випадку, обраною групою вважається значення змінної academy_group, яке присвоюється змінній group.
-
- 67  if [ -z "$academy_group" ]; then
- 68      echo "Оберіть групу:"
- 69      select group_choice in $groups; do # Змінено на group_choice для select
- 70          if [ -n "$group_choice" ]; then
- 71              group="$group_choice" # Присвоєння основній змінній group
- 72              break
- 73          fi
- 74          echo "Невірний вибір. Спробуйте ще раз."
- 75      done
- 76  else
- 77      group="$academy_group"
- 78  fi
-
-У рядках 79-80 (у вашому коді) формується ім'я вихідного файлу (output_file) шляхом додавання префіксу Google_ до імені вхідного файлу. Потім у цей файл записується рядок заголовків для CSV-файлу Google Календаря.
-
- 79  output_file="Google_${csv_file}"
- 80  
- 81  echo "\"Subject\",\"Start Date\",\"Start Time\",\"End Date\",\"End Time\",\"Description\"" > "$output_file"
-
-Основний конвеєр обробки даних знаходиться у рядках 83-121.
-Спочатку, у рядках 83-84, вхідний CSV-файл знову обробляється iconv для конвертації кодування та sed для нормалізації рядків і видалення BOM.
-
- 83  iconv -f windows-1251 -t utf-8 "$csv_file" | 
- 84  sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' -e 's/^\xEF\xBB\xBF//' |
-
-Далі, перший awk скрипт (рядки 85-102) обробляє підготовлені дані. Він встановлює вхідний роздільник полів FS="\",\"" та вихідний роздільник OFS="|". Функція sortkey генерує ключ для сортування у форматі РРРРММДДГГХХ. Скрипт пропускає перший рядок (NR > 1), видаляє лапки з першого та останнього полів, виокремлює назву групи (group_name) та тип заняття (lesson_type). Якщо group_name відповідає обраній (grp), скрипт виводить ключ сортування, тип заняття, вихідні дати, час та 12-те поле (опис).
-Результат роботи цього awk передається команді sort -t'|' -k1,1 (частина рядка 102), яка сортує дані за згенерованим ключем.
-
- 85  awk -v grp="$group" '
- 86  BEGIN { 
- 87      FS="\",\""; 
- 88      OFS="|"; 
- 89  }
- 90  
- 91  
- 92  function sortkey(date, time,   d, m, y, h, min) {
- 93      split(date, dp, ".")
- 94      split(time, tp, ":")
- 95      return sprintf("%04d%02d%02d%02d%02d", dp[3], dp[2], dp[1], tp[1], tp[2])
- 96  }
- 97  
- 98  NR > 1 {
- 99      gsub(/^"/, "", $1)
-100      gsub(/"$/, "", $(NF))
-101      
-102      split($1, parts, " - ")
-103      group_name = parts[1]
-104      lesson_type = parts[2]
-105      
-106      if (group_name == grp) {
-107          key = sortkey($2, $3)
-108          # Using pipe separator for easier processing
-109          print key, lesson_type, $2, $3, $4, $5, $12
-110      }
-111  }
-112  ' | sort -t'|' -k1,1 |
-
-Відсортовані дані передаються другому awk скрипту (рядки 113-143). Цей awk встановлює вхідний роздільник FS='|' та вихідний OFS=",". Функції ampm та format_date перетворюють час та дату у потрібний формат (12-годинний AM/PM та MM/DD/YYYY відповідно). Основний блок скрипта обробляє кожен рядок: витягує тип заняття (type) та дату (raw_date), створює комбінований ключ combo_key (тип-дата) для нумерації занять. Для кожної унікальної комбінації "тип-день" лічильник type_date_count[type] інкрементується, і це значення зберігається в combo_seen[combo_key] для отримання порядкового номера заняття. Потім формує рядок formatted_output з усіма необхідними полями. Якщо не активовано тихий режим (quiet != "true"), рядок виводиться у stdout. У будь-якому випадку, рядок додається до вихідного файлу $output_file (рядок 143).
-
-113  awk -F'|' -v quiet="$quiet_mode" '
-114  BEGIN { 
-115      OFS=","; 
-116  }
-117  
-118  function ampm(time_str,  h, m, ampm_val) {
-119      split(time_str, t, ":")
-120      h = t[1]+0
-121      m = t[2]+0
-122      ampm_val = (h >= 12) ? "PM" : "AM"
-123      if (h == 0) h = 12
-124      else if (h > 12) h -= 12
-125      return sprintf("%02d:%02d %s", h, m, ampm_val)
-126  }
-127  
-128  function format_date(d,   p) {
-129      split(d, p, ".")
-130      return sprintf("%02d/%02d/%04d", p[2], p[1], p[3])
-131  }
-132  
-133  {
-134      type = $2
-135      raw_date = $3
-136      
-137      split(raw_date, d_parts_num, ".") # Змінено ім'я масиву, щоб уникнути конфлікту з d у format_date
-138      date_key = sprintf("%04d%02d%02d", d_parts_num[3], d_parts_num[2], d_parts_num[1])
-139      combo_key = type "-" date_key
-140  
-141      if (!(combo_key in combo_seen)) {
-142          type_date_count[type]++
-143          combo_seen[combo_key] = type_date_count[type]
-144      }
-145  
-146      number = combo_seen[combo_key]
-147  
-148      formatted_output = "\"" type "; №" number "\"," \
-149            "\"" format_date($3) "\"," \
-150            "\"" ampm($4) "\"," \
-151            "\"" format_date($5) "\"," \
-152            "\"" ampm($6) "\"," \
-153            "\"" $7 "\""
-154  
-155      if (quiet != "true") print formatted_output > "/dev/stdout"
-156      print formatted_output
-157  }
-158  ' >> "$output_file"
-
-Наприкінці, у рядках 160-162 (у вашому коді), якщо не було увімкнено тихий режим (! $quiet_mode), виводиться повідомлення про успішне створення файлу та його ім'я.
-
-160 if ! $quiet_mode; then
-161     echo "CSV збережено як: $output_file"
-162 fi
-
-ВИСНОВКИ
-
-Під час виконання лабораторної роботи я створив Bash-скрипт, який обробляє CSV-розклад занять, дозволяє зручно вибирати групу та файл, обробляє кодування, форматує дані для Google Calendar та підтримує ключі для керування виводом. Я навчився використовувати iconv, select, awk, sort, sed і глибше зрозумів обробку даних у Bash.
-
-ДОДАТОК А
-Відеозапис
-
-https://youtu.be/K9asdfoDo
-Таймкоди відео:
-00:00 – Вступ та мета роботи
-00:30 – Огляд синтаксису виклику скрипта
-01:20 – Демонстрація вибору файлу та групи
-02:40 – Пояснення логіки обробки CSV
-04:10 – Приклад результату в Google Календарі
-05:00 – Підсумки
-
-
-ДОДАТОК Б
-Програмний код
-Повний код скрипта pzpi-23-5-tkach-leonid-lab1-code:
-
-GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab1/pzpi-23-5-tkach-leonid-lab1-code
-
-   1  #!/bin/bash
-   2  
-   3  show_help() {
-   4      echo "Usage: script.sh [--help | --version] | [[-q|--quiet] [академ_група] файл_із_cist.csv]"
-   5      echo ""
-   6      echo "Options:"
-   7      echo "  --help      Показати довідку"
-   8      echo "  --version   Показати інформацію про версію"
-   9      echo "  -q, --quiet Приховати стандартний вивід"
-  10  }
-  11  
-  12  show_version() {
-  13      echo "Script version 1.0.0"
-  14  }
-  15  
-  16  quiet_mode=false
-  17  csv_file=""
-  18  academy_group=""
-  19  
-  20  while [[ "$#" -gt 0 ]]; do
-  21      case "$1" in
-  22          --help)
-  23              show_help
-  24              exit 0
-  25              ;;
-  26          --version)
-  27              show_version
-  28              exit 0
-  29              ;;
-  30          -q|--quiet)
-  31              quiet_mode=true
-  32              shift
-  33              ;;
-  34          *)
-  35              if [[ -z "$academy_group" ]]; then
-  36                  academy_group="$1"
-  37              elif [[ -z "$csv_file" ]]; then
-  38                  csv_file="$1"
-  39              else
-  40                  echo "Невідома опція або занадто багато параметрів."
-  41                  show_help
-  42                  exit 1
-  43              fi
-  44              shift
-  45              ;;
-  46      esac
-  47  done
-  48  
-  49  if [ -z "$csv_file" ]; then
-  50      echo "Доступні CSV-файли:"
-  51      select csv_file_choice in TimeTable_*.csv; do
-  52          if [ -n "$csv_file_choice" ]; then
-  53              csv_file="$csv_file_choice"
-  54              break
-  55          fi
-  56          echo "Невірний вибір. Спробуйте ще раз."
-  57      done
-  58  fi
-  59  
-  60  groups=$(iconv -f windows-1251 -t utf-8 "$csv_file" | sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' | sed 's/^\xEF\xBB\xBF//' | sed 's/"//g' | awk -F',' 'NR > 1 { split($1, parts, " - "); print parts[1] }' | sort | uniq)
-  61  
-  62  if [ -z "$groups" ]; then
-  63      echo "Групи не знайдено."
-  64      exit 1
-  65  fi
-  66  
-  67  if [ -z "$academy_group" ]; then
-  68      echo "Оберіть групу:"
-  69      select group_choice in $groups; do
-  70          if [ -n "$group_choice" ]; then
-  71              group="$group_choice"
-  72              break
-  73          fi
-  74          echo "Невірний вибір. Спробуйте ще раз."
-  75      done
-  76  else
-  77      group="$academy_group"
-  78  fi
-  79  output_file="Google_${csv_file}"
-  80  
-  81  echo "\"Subject\",\"Start Date\",\"Start Time\",\"End Date\",\"End Time\",\"Description\"" > "$output_file"
-  82  
-  83  iconv -f windows-1251 -t utf-8 "$csv_file" | 
-  84  sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' -e 's/^\xEF\xBB\xBF//' | 
-  85  awk -v grp="$group" '
-  86  BEGIN { 
-  87      FS="\",\""; 
-  88      OFS="|"; 
-  89  }
-  90  
-  91  
-  92  function sortkey(date, time,   d, m, y, h, min) {
-  93      split(date, dp, ".")
-  94      split(time, tp, ":")
-  95      return sprintf("%04d%02d%02d%02d%02d", dp[3], dp[2], dp[1], tp[1], tp[2])
-  96  }
-  97  
-  98  NR > 1 {
-  99      gsub(/^"/, "", $1)
- 100      gsub(/"$/, "", $(NF))
- 101      
- 102      split($1, parts, " - ")
- 103      group_name = parts[1]
- 104      lesson_type = parts[2]
- 105      
- 106      if (group_name == grp) {
- 107          key = sortkey($2, $3)
- 108          
- 109          print key, lesson_type, $2, $3, $4, $5, $12
- 110      }
- 111  }
- 112  ' | sort -t'|' -k1,1 | 
- 113  awk -F'|' -v quiet="$quiet_mode" '
- 114  BEGIN { 
- 115      OFS=","; 
- 116  }
- 117  
- 118  function ampm(time_str,  h, m, ampm_val) {
- 119      split(time_str, t, ":")
- 120      h = t[1]+0
- 121      m = t[2]+0
- 122      ampm_val = (h >= 12) ? "PM" : "AM"
- 123      if (h == 0) h = 12
- 124      else if (h > 12) h -= 12
- 125      return sprintf("%02d:%02d %s", h, m, ampm_val)
- 126  }
- 127  
- 128  function format_date(d,   p) {
- 129      split(d, p, ".")
- 130      return sprintf("%02d/%02d/%04d", p[2], p[1], p[3])
- 131  }
- 132  
- 133  {
- 134      type = $2
- 135      raw_date = $3
- 136      
- 137      split(raw_date, d, ".")
- 138      date_key = sprintf("%04d%02d%02d", d[3], d[2], d[1])
- 139      combo_key = type "-" date_key
- 140  
- 141      if (!(combo_key in combo_seen)) {
- 142          type_date_count[type]++
- 143          combo_seen[combo_key] = type_date_count[type]
- 144      }
- 145  
- 146      number = combo_seen[combo_key]
- 147  
- 148      formatted_output = "\"" type "; №" number "\"," \
- 149            "\"" format_date($3) "\"," \
- 150            "\"" ampm($4) "\"," \
- 151            "\"" format_date($5) "\"," \
- 152            "\"" ampm($6) "\"," \
- 153            "\"" $7 "\""
- 154  
- 155      if (quiet != "true") print formatted_output > "/dev/stdout"
- 156      print formatted_output
- 157  }
- 158  ' >> "$output_file"
- 159  
- 160  if ! $quiet_mode; then
- 161      echo "CSV збережено як: $output_file"
- 162  fi
+	10  }
+	11  
+	12  show_version() {
+	13      echo "Script version 1.0.0"
+	14  }
+	15  
+	16  quiet_mode=false
+	17  csv_file=""
+	18  academy_group=""
+	19  
+	20  while [[ $# -gt 0 ]]; do
+	21      case $1 in
+	22          --help)
+	23              show_help
+	24              exit 0
+	25              ;;
+	26          --version)
+	27              show_version
+	28              exit 0
+	29              ;;
+	30          -q|--quiet)
+	31              quiet_mode=true
+	32              shift
+	33              ;;
+	34          *)
+	35              if [[ "$1" =~ ^ПЗПІ-[0-9]+-[0-9]+$ ]]; then
+	36                  academy_group="$1"
+	37              elif [[ "$1" =~ ^TimeTable_[0-9]+_[0-9]+_[0-9]+\.csv$ ]]; then
+	38                  csv_file="$1"
+	39              else
+	40                  echo "Невідома опція або занадто багато параметрів."
+	41                  show_help
+	42                  exit 1
+	43              fi
+	44              shift
+	45              ;;
+	46      esac
+	47  done
+	48  
+	49  if [ -z "$csv_file" ]; then
+	50      echo "Доступні CSV-файли:"
+	51      select csv_file_choice in TimeTable_*.csv; do
+	52          if [ -n "$csv_file_choice" ]; then
+	53              csv_file="$csv_file_choice"
+	54              break
+	55          fi
+	56          echo "Невірний вибір. Спробуйте ще раз."
+	57      done
+	58  fi
+	59  
+	60  groups=$(iconv -f windows-1251 -t utf-8 "$csv_file" | 
+	61           sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' |
+	62           sed 's/"//g' |
+	63           awk -F',' 'NR > 1 { split($1, parts, " - "); print parts[1] }' |
+	64           sort -V | uniq)
+	65  
+	66  if [ -z "$groups" ]; then
+	67      echo "Групи не знайдено."
+	68      exit 1
+	69  fi
+	70  
+	71  if [ -z "$academy_group" ]; then
+	72      echo "Оберіть групу:"
+	73      select group_choice in $groups; do
+	74          if [ -n "$group_choice" ]; then
+	75              group="$group_choice"
+	76              break
+	77          fi
+	78          echo "Невірний вибір. Спробуйте ще раз."
+	79      done
+	80  else
+	81      group="$academy_group"
+	82  fi
+	83  output_file="Google_${csv_file}"
+	84  
+	85  echo "\"Subject\",\"Start Date\",\"Start Time\",\"End Date\",\"End Time\",\"Description\"" > "$output_file"
+	86  
+	87  iconv -f windows-1251 -t utf-8 "$csv_file" | 
+	88  sed -e 's/\r\n/\n/g' -e 's/\r/\n/g' | 
+	89  awk -v grp="$group" '
+	90  BEGIN { 
+	91      FS="\",\""; 
+	92      OFS="|"; 
+	93  }
+	94  
+	95  function sortkey(date, time) {
+	96      split(date, dp, ".")
+	97      split(time, tp, ":")
+	98      return sprintf("%04d%02d%02d%02d%02d", dp[3], dp[2], dp[1], tp[1], tp[2])
+	99  }
+100  
+101  NR > 1 {
+102      gsub(/^"/, "", $1)
+103      gsub(/"$/, "", $(NF))
+104      
+105      split($1, parts, " - ")
+106      group_name = parts[1]
+107      lesson_type = parts[2]
+108      
+109      if (group_name == grp) {
+110          key = sortkey($2, $3)
+111          
+112          print key, lesson_type, $2, $3, $4, $5, $12
+113      }
+114  }
+115  ' | sort -t'|' -k1,1 | 
+116  awk -F'|' -v quiet="$quiet_mode" '
+117  BEGIN { 
+118      OFS=","; 
+119  }
+120  
+121  function ampm(time_str,  h, m, ampm_val) {
+122      split(time_str, t, ":")
+123      h = t[1]+0
+124      m = t[2]+0
+125      ampm_val = (h >= 12) ? "PM" : "AM"
+126      if (h == 0) h = 12
+127      else if (h > 12) h -= 12
+128      return sprintf("%02d:%02d %s", h, m, ampm_val)
+129  }
+130  
+131  function format_date(d,   p) {
+132      split(d, p, ".")
+133      return sprintf("%02d/%02d/%04d", p[2], p[1], p[3])
+134  }
+135  
+136  {
+137      type = $2
+138      raw_date = $3
+139      
+140      split(raw_date, d, ".")
+141      date_key = sprintf("%04d%02d%02d", d[3], d[2], d[1])
+142      combo_key = type "-" date_key
+143  
+144      if (!(combo_key in combo_seen)) {
+145          type_date_count[type]++
+146          combo_seen[combo_key] = type_date_count[type]
+147      }
+148  
+149      number = combo_seen[combo_key]
+150  
+151      formatted_output = "\"" type "; №" number "\"," \
+152            "\"" format_date($3) "\"," \
+153            "\"" ampm($4) "\"," \
+154            "\"" format_date($5) "\"," \
+155            "\"" ampm($6) "\"," \
+156            "\"" $7 "\""
+157  
+158      print formatted_output >> output_file
+159  
+160      if (quiet != "true") {
+161          print formatted_output
+162      }
+163  }
+164  ' output_file="$output_file"
+165  
+166  if ! $quiet_mode; then
+167      echo "CSV збережено як: $output_file"
+168  fi
