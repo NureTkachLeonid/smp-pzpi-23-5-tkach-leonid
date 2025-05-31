@@ -1,0 +1,469 @@
+МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+КАФЕДРА ПРОГРАМНОЇ ІНЖЕНЕРІЇ
+
+Звіт
+з лабораторної роботи № 2
+з дисципліни
+«Скриптові мови програмування»
+
+Виконав:
+ст. гр. ПЗПІ-23-5
+Ткач Леонід Ярославович
+
+Перевірив:
+ст. викладач кафедри ПІ
+Сокорчук Ігор Петрович
+
+2025
+
+1 ІСТОРІЯ ЗМІН
+№  Дата        Версія звіту  Опис змін та виправлень
+1  31.05.2025  0.1          Створено звіт, додано опис програми та коду
+
+2 ЗАВДАННЯ
+2.1 Мета роботи
+Ознайомитися з основами синтаксису та принципами роботи мови PHP. Отримати практичні навички написання програм скриптовими мовами.
+
+2.2 Завдання
+Створити консольний застосунок «Продовольчий магазин "Весна"».
+Вимоги:
+- Ім’я користувача не може бути порожнім і повинно містити хоча б одну літеру.
+- Вік користувача має бути від 7 до 150 років.
+- Вихід із програми здійснюється введенням «0».
+- Перевірка введених даних:
+  * Чи існує обраний пункт меню.
+  * Чи існує обраний товар.
+  * Чи кількість товару від 0 до 99.
+  * Чи ім’я містить хоча б одну літеру.
+  * Чи вік у межах [7–150].
+- Функціональність програми має відповідати тестовій програмі.
+
+3 ОПИС ВИКОНАНОЇ РОБОТИ
+3.1 Призначення програми
+Програма реалізує текстовий інтерфейс магазину, який дозволяє:
+- Переглядати список товарів та додавати їх до кошика.
+- Отримувати підсумковий рахунок.
+- Налаштовувати профіль користувача (ім’я та вік).
+- Завершувати роботу програми.
+
+3.2 Опис основних частин коду
+3.2.1 Масив товарів (файл smp-pzpi-23-5-tkach-leonid-lab2_products.php, рядки 3–11)
+Асоціативний масив $products містить товари з полями:
+- "name" — назва товару.
+- "price" — ціна товару.
+
+3.2.2 Кошик (рядок 22, smp-pzpi-23-5-tkach-leonid-lab2-code.php)
+Порожній масив $cart для зберігання товарів, обраних користувачем, де ключ — ID товару, значення — кількість.
+
+3.2.3 Функція showMainMenu() (рядки 39–50)
+Виводить головне меню магазину з опціями:
+- 1 — Вибрати товари.
+- 2 — Отримати підсумковий рахунок.
+- 3 — Налаштувати профіль.
+- 0 — Вuiти.
+
+3.2.4 Функція selectProducts() (рядки 90–142)
+Реалізує вибір товарів:
+- Виводить список товарів із цінами.
+- Дозволяє обрати товар за номером.
+- Запитує кількість (0 для видалення, 1–99 для додавання).
+- Перевіряє валідність введених даних (наявність товару, коректність кількості).
+- Оновлює кошик ($cart).
+
+3.2.5 Функція showFinalBill() (рядки 144–185)
+Виводить підсумковий рахунок із:
+- Назвою товару.
+- Ціною за одиницю.
+- Кількістю.
+- Загальною вартістю (ціна × кількість).
+- Підсумковою сумою до сплати.
+
+3.2.6 Функція setupProfile() (рядки 187–234)
+Запитує ім’я та вік користувача:
+- Перевіряє, чи ім’я містить літери та не є порожнім.
+- Перевіряє, чи вік у межах [7–150].
+- Зберігає дані в масиві $profile.
+
+3.2.7 Основний цикл програми (рядки 52–68)
+Функція handleMainMenu() обробляє вибір користувача в головному меню та викликає відповідні функції до введення «0» для виходу.
+
+3.2.8 Перевірки
+Програма перевіряє:
+- Чи існує команда меню.
+- Чи існує обраний товар.
+- Чи кількість товару в межах [0–99].
+- Чи ім’я містить літери.
+- Чи вік у межах [7–150].
+
+4 ВИСНОВКИ
+Програма відповідає завданню, забезпечуючи:
+- Відображення меню та списку товарів.
+- Додавання/видалення товарів у кошику.
+- Формування підсумкового рахунку.
+- Налаштування профілю з валідацією даних.
+- Обробку помилок введення.
+
+ДОДАТОК А
+ВІДЕОЗАПИС
+Відеозапис презентації результатів лабораторної роботи: https://youtu.be/7XeVhy0Ofjs
+
+Хронологічний опис відеозапису:
+00:00 - Вітання та завдання
+00:23 - Пояснення лабораторної роботи
+08:24 - Демонстрация роботи програми
+
+ДОДАТОК Б
+Графічні матеріали, інтерфейс програми:
+- Рисунок Б.1 — Результат роботи програми з коректними даними.
+- Рисунок Б.2 — Результат роботи програми з некоректними даними (наприклад, неправильний номер товару або кількість).
+
+ДОДАТОК В
+Програмний код
+
+В.1 Файл smp-pzpi-23-5-tkach-leonid-lab2_products.php
+1.  <?php
+2.  $products = [
+3.      1 => ["name" => "Молоко пастеризоване", "price" => 12],
+4.      2 => ["name" => "Хліб чорний", "price" => 9],
+5.      3 => ["name" => "Сир білий", "price" => 21],
+6.      4 => ["name" => "Сметана 20%", "price" => 25],
+7.      5 => ["name" => "Кефір 1%", "price" => 19],
+8.      6 => ["name" => "Вода газована", "price" => 18],
+9.      7 => ["name" => "Печиво \"Весна\"", "price" => 14],
+10. ];
+11. ?>
+
+В.2 Файл smp-pzpi-23-5-tkach-leonid-lab2-code.php
+1.  <?php
+2.  
+3.  define('MENU_EXIT', '0');
+4.  define('MENU_SELECT_PRODUCTS', '1');
+5.  define('MENU_GET_BILL', '2');
+6.  define('MENU_SETUP_PROFILE', '3');
+7.  
+8.  define('MIN_AGE', 7);
+9.  define('MAX_AGE', 150);
+10. define('MAX_PRODUCT_QUANTITY', 99);
+11. 
+12. define('STORE_TITLE', "################################\n# ПРОДОВОЛЬЧИЙ МАГАЗИН \"ВЕСНА\" #\n################################");
+13. 
+14. define('ERROR_INVALID_COMMAND', 'ПОМИЛКА! Введіть правильну команду');
+15. define('ERROR_INVALID_PRODUCT', 'ПОМИЛКА! ВКАЗАНО НЕПРАВИЛЬНИЙ НОМЕР ТОВАРУ');
+16. define('ERROR_INVALID_QUANTITY', 'ПОМИЛКА! Введіть кількість від 0 до 99');
+17. define('ERROR_EMPTY_NAME', 'ПОМИЛКА! Імʼя повинно містити хоча б одну літеру.');
+18. define('ERROR_INVALID_AGE', 'ПОМИЛКА! Вік повинен бути від 7 до 150 років.');
+19. define('ERROR_EMPTY_CART', 'КОШИК ПОРОЖНІЙ. Спочатку виберіть товари.');
+20. 
+21. define('CART_EMPTY', 'КОШИК ПОРОЖНІЙ');
+22. define('REMOVING_FROM_CART', 'ВИДАЛЯЮ З КОШИКА');
+23. define('GOODBYE_MESSAGE', 'Дякуємо за покупки! До побачення!');
+24. define('PROFILE_UPDATED', 'Профіль успішно оновлено!');
+25. 
+26. require_once 'smp-pzpi-23-5-tkach-leonid-lab2_products.php';
+27. 
+28. $cart = [];
+29. $profile = [
+30.     "name" => "",
+31.     "age" => 0
+32. ];
+33. 
+34. $mainMenuItems = [
+35.     MENU_SELECT_PRODUCTS => "Вибрати товари",
+36.     MENU_GET_BILL        => "Отримати підсумковий рахунок",
+37.     MENU_SETUP_PROFILE   => "Налаштувати свій профіль",
+38.     MENU_EXIT            => "Вийти з програми"
+39. ];
+40. 
+41. function clearScreen() {
+42.     echo chr(27) . "[2J" . chr(27) . "[;H";
+43. }
+44. 
+45. function showMainMenu() {
+46.     global $mainMenuItems;
+47.     echo "\n";
+48.     echo STORE_TITLE . "\n";
+49.     foreach ($mainMenuItems as $key => $menuItem) {
+50.         echo "$key $menuItem\n";
+51.     }
+52.     echo "Введіть команду: ";
+53. }
+54. 
+55. function handleMainMenu() {
+56.     while (true) {
+57.         showMainMenu();
+58.         $command = trim(fgets(STDIN));
+59. 
+60.         switch ($command) {
+61.             case MENU_EXIT:
+62.                 echo GOODBYE_MESSAGE . "\n";
+63.                 exit(0);
+64.             case MENU_SELECT_PRODUCTS:
+65.                 selectProducts();
+66.                 break;
+67.             case MENU_GET_BILL:
+68.                 showFinalBill();
+69.                 break;
+70.             case MENU_SETUP_PROFILE:
+71.                 setupProfile();
+72.                 break;
+73.             default:
+74.                 echo ERROR_INVALID_COMMAND . "\n";
+75.                 break;
+76.         }
+77.     }
+78. }
+79. 
+80. function showProductList() {
+81.     global $products;
+82. 
+83.     if (empty($products) || !is_array($products)) {
+84.         echo "ПОМИЛКА: Список товарів не завантажено (перевірте smp-pzpi-23-5-tkach-leonid-lab2_products.php).\n";
+85.         echo "Натисніть Enter для повернення...";
+86.         fgets(STDIN);
+87.         return;
+88.     }
+89. 
+90.     echo "\n";
+91.     echo "№  НАЗВА                 ЦІНА\n";
+92.     foreach ($products as $id => $product) {
+93.         if (!isset($product["name"]) || !isset($product["price"])) {
+94.             echo "ПОМИЛКА: Некоректний формат товару ID $id в smp-pzpi-23-5-tkach-leonid-lab2_products.php.\n";
+95.             continue;
+96.         }
+97.         $name = $product["name"];
+98.         $price = $product["price"];
+99.         
+100.        preg_match_all('/./us', (string)$name, $matches);
+101.        $nameLength = count($matches[0]);
+102.        
+103.        $paddingSize = max(22 - $nameLength, 0);
+104.        $padding = str_repeat(" ", $paddingSize);
+105.        
+106.        printf("%-2d %s%s %s\n", $id, $name, $padding, $price);
+107.    }
+108.    echo "   -----------\n";
+109.    echo MENU_EXIT . "  ПОВЕРНУТИСЯ\n";
+110.    echo "Виберіть товар: ";
+111. }
+112. 
+113. function showCart() {
+114.     global $cart, $products;
+115. 
+116.     if (empty($cart)) {
+117.         echo CART_EMPTY . "\n";
+118.         return;
+119.     }
+120. 
+121.     if (empty($products) || !is_array($products)) {
+122.         echo "ПОМИЛКА: Список товарів не завантажено для відображення кошика (перевірте smp-pzpi-23-5-tkach-leonid-lab2_products.php).\n";
+123.         return;
+124.     }
+125. 
+126.     echo "У КОШИКУ:\n";
+127.     echo "НАЗВА                  КІЛЬКІСТЬ\n";
+128.     foreach ($cart as $productId => $quantity) {
+129.         if (!isset($products[$productId]) || !isset($products[$productId]["name"])) {
+130.             echo "ПОМИЛКА: Товар з ID $productId не знайдено в списку товарів (перевірте smp-pzpi-23-5-tkach-leonid-lab2_products.php).\n";
+131.             continue;
+132.         }
+133.         $name = $products[$productId]["name"];
+134.         preg_match_all('/./us', (string)$name, $matches);
+135.         $nameLength = count($matches[0]);
+136. 
+137.         $paddingSize = max(22 - $nameLength, 0);
+138.         $padding = str_repeat(" ", $paddingSize);
+139. 
+140.         printf("%s%s %-4d\n", $name, $padding, $quantity);
+141.     }
+142. }
+143. 
+144. function selectProducts() {
+145.     global $products, $cart;
+146. 
+147.     while (true) {
+148.         clearScreen();
+149.         showCart();
+150.         echo "\n";
+151.         showProductList();
+152.         
+153.         $productIdInput = trim(fgets(STDIN));
+154. 
+155.         if ($productIdInput === MENU_EXIT) {
+156.             return;
+157.         }
+158. 
+159.         if (!is_numeric($productIdInput) || !isset($products[(int)$productIdInput])) {
+160.             echo ERROR_INVALID_PRODUCT . "\n";
+161.             echo "Натисніть Enter для продовження...";
+162.             fgets(STDIN);
+163.             continue;
+164.         }
+165.         $productId = (int)$productIdInput;
+166. 
+167.         $product = $products[$productId];
+168.         echo "Вибрано: " . $product["name"] . "\n";
+169.         echo "Введіть кількість (0 для видалення), штук: ";
+170. 
+171.         $quantityInput = trim(fgets(STDIN));
+172.         if (!is_numeric($quantityInput)){
+173.             echo ERROR_INVALID_QUANTITY . "\n";
+174.             echo "Натисніть Enter для продовження...";
+175.             fgets(STDIN);
+176.             continue;
+177.         }
+178.         $quantity = (int)$quantityInput;
+179. 
+180.         if ($quantity < 0 || $quantity > MAX_PRODUCT_QUANTITY) {
+181.             echo ERROR_INVALID_QUANTITY . "\n";
+182.             echo "Натисніть Enter для продовження...";
+183.             fgets(STDIN);
+184.             continue;
+185.         }
+186. 
+187.         if ($quantity === 0) {
+188.             if (isset($cart[$productId])) {
+189.                 unset($cart[$productId]);
+190.                 echo REMOVING_FROM_CART . "\n";
+191.             }
+192.         } else {
+193.             $cart[$productId] = $quantity;
+194.         }
+195.     }
+196. }
+197. 
+198. function showFinalBill() {
+199.     global $products, $cart;
+200. 
+201.     clearScreen();
+202.     if (empty($cart)) {
+203.         echo ERROR_EMPTY_CART . "\n";
+204.         echo "Натисніть Enter для повернення в меню...";
+205.         fgets(STDIN);
+206.         return;
+207.     }
+208.     
+209.     if (empty($products) || !is_array($products)) {
+210.         echo "ПОМИЛКА: Список товарів не завантажено для розрахунку (перевірте smp-pzpi-23-5-tkach-leonid-lab2_products.php).\n";
+211.         echo "Натисніть Enter для повернення...";
+212.         fgets(STDIN);
+213.         return;
+214.     }
+215. 
+216.     echo "\n";
+217.     echo "№  НАЗВА                  ЦІНА  КІЛ-СТЬ  ВАРТІСТЬ\n";
+218. 
+219.     $total = 0;
+220.     $index = 1;
+221. 
+222.     foreach ($cart as $productId => $quantity) {
+223.         if (!isset($products[$productId]) || !isset($products[$productId]["name"]) || !isset($products[$productId]["price"])) {
+224.             echo "ПОМИЛКА: Дані для товару з ID $productId неповні або відсутні (перевірте smp-pzpi-23-5-tkach-leonid-lab2_products.php).\n";
+225.             continue;
+226.         }
+227.         $product = $products[$productId];
+228.         $cost = $product["price"] * $quantity;
+229.         $total += $cost;
+230. 
+231.         $name = $product["name"];
+232.         preg_match_all('/./us', (string)$name, $matches);
+233.         $nameLength = count($matches[0]);
+234. 
+235.         $paddingSize = max(22 - $nameLength, 0);
+236.         $padding = str_repeat(" ", $paddingSize);
+237.         
+238.         $nameStr = $name . $padding;
+239. 
+240.         printf("%-2d %s %-5s %-8d %-s\n",
+241.             $index++,
+242.             $nameStr,
+243.             $product["price"],
+244.             $quantity,
+245.             $cost
+246.         );
+247.     }
+248. 
+249.     echo "\nРАЗОМ ДО CПЛАТИ: $total\n\n";
+250.     echo "Натисніть Enter для повернення в меню...";
+251.     fgets(STDIN);
+252. }
+253. 
+254. function setupProfile() {
+255.     global $profile;
+256.     clearScreen();
+257. 
+258.     $validName = false;
+259.     while (!$validName) {
+260.         echo "Ваше імʼя (поточне: " . ($profile["name"] ?: "не вказано") . "): ";
+261.         $name = trim(fgets(STDIN));
+262. 
+263.         if (empty($name)) {
+264.             if (!empty($profile["name"])) {
+265.                 $validName = true;
+266.                 continue;
+267.             } else {
+268.                 echo ERROR_EMPTY_NAME . "\n";
+269.                 continue;
+270.             }
+271.         }
+272. 
+273.         if (!preg_match('/[a-zA-Zа-яА-ЯіІїЇєЄґҐ]/u', $name)) {
+274.             echo ERROR_EMPTY_NAME . "\n";
+275.             continue;
+276.         }
+277. 
+278.         $profile["name"] = $name;
+279.         $validName = true;
+280.     }
+281. 
+282.     $validAge = false;
+283.     while (!$validAge) {
+284.         echo "Ваш вік (поточний: " . ($profile["age"] > 0 ? $profile["age"] : "не вказано") . "): ";
+285.         $ageInput = trim(fgets(STDIN));
+286. 
+287.         if (empty($ageInput)) {
+288.             if ($profile["age"] > 0) {
+289.                 $validAge = true;
+290.                 continue;
+291.             } else {
+292.                 echo "Будь ласка, введіть ваш вік.\n";
+293.                 continue;
+294.             }
+295.         }
+296.         
+297.         if (!is_numeric($ageInput)) {
+298.             echo ERROR_INVALID_AGE . "\n";
+299.             continue;
+300.         }
+301.         $age = (int)$ageInput;
+302. 
+303.         if ($age < MIN_AGE || $age > MAX_AGE) {
+304.             echo ERROR_INVALID_AGE . "\n";
+305.             continue;
+306.         }
+307. 
+308.         $profile["age"] = $age;
+309.         $validAge = true;
+310.     }
+311. 
+312.     echo PROFILE_UPDATED . "\n";
+313.     echo "Імʼя: " . $profile["name"] . "\n";
+314.     echo "Вік: " . $profile["age"] . "\n\n";
+315.     echo "Натисніть Enter для повернення в меню...";
+316.     fgets(STDIN);
+317. }
+318. 
+319. if (!isset($products)) {
+320.     echo "ПОМИЛКА: Не вдалося завантажити дані про товари з smp-pzpi-23-5-tkach-leonid-lab2_products.php. Роботу програми припинено.\n";
+321.     exit(1);
+322. }
+323. if (!isset($mainMenuItems)) {
+324.     echo "ПОМИЛКА: Не визначено пункти головного меню. Роботу програми припинено.\n";
+325.     exit(1);
+326. }
+327. 
+328. clearScreen();
+329. handleMainMenu();
+330. 
+331. ?>
