@@ -1,0 +1,903 @@
+/* === ЦВЕТОВАЯ ПАЛИТРА ПРОЕКТА (СЕМАНТИЧЕСКИЕ НАЗВАНИЯ) === */
+:root {
+    /* Основные цвета бренда */
+    --color-brand-olive: rgb(84, 117, 68);       /* Основной брендовый цвет: футер, основные акценты */
+    --color-brand-coral: #e16a52;       /* Вторичный брендовый цвет: ссылки, текст лого, ховеры */
+    --color-brand-orange: #e05439;      /* Третичный брендовый цвет: основной текст, активные состояния */
+    
+    /* Фоновые цвета */
+    --color-bg-primary: #F2F2F2;        /* Основной фон страницы */
+    --color-bg-surface: #fff;           /* Фон карточек, форм, шапки */
+    --color-bg-muted: #b0c280;          /* Приглушенный фон (текущий body background) */
+    
+    /* Текстовые цвета */
+    --color-text-primary: #333;         /* Основной текст (навигация, заголовки) */
+    --color-text-accent: #e16a52;       /* Акцентный текст (логотип) */
+    --color-text-on-dark: #F2F2F2;      /* Светлый текст на темном фоне */
+    
+    /* Цвета интерфейса */
+    --color-border-default: #ddd;       /* Стандартные рамки */
+    --color-border-input: #ccc;         /* Рамки полей ввода */
+    --color-logo-bg: #099d2b;          /* Фон иконки логотипа */
+    
+    /* Системные цвета (состояния) */
+    --color-error-bg: #f8d7da;
+    --color-error-text: #dc3545;
+    --color-success-bg: #d4edda;
+    --color-success-text: #155724;
+}
+
+/* === БАЗОВЫЕ СТИЛИ === */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    color: var(--color-text-primary); /* Основной текст */
+    margin: 0;
+    background-color: var(--color-bg-muted); /* Приглушенный фон */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* === КОМПОНЕНТЫ (БЕЗ ОТСТУПОВ) === */
+
+/* Кнопки */
+.btn {
+    /* 1. Делаем кнопку flex-контейнером */
+    display: inline-flex;
+    
+    /* 2. Вертикально выравниваем иконку и текст по центру */
+    align-items: center;
+    
+    /* 3. Горизонтально центрируем содержимое */
+    gap: 8px;
+    justify-content: center;
+    height: 40px;
+    background: var(--color-brand-coral); /* Акцентный цвет для кнопок */
+    color: var(--color-text-on-dark); /* Светлый текст */
+    padding: 0 1rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    font-size: 1rem;
+    line-height: 40px;
+    margin: 0;
+    box-sizing: border-box;
+    font-weight: 500;
+    
+}
+
+.btn:hover {
+    background: var(--color-brand-orange); /* Активное состояние */
+}
+
+.btn--block {
+    display: block;
+    width: 100%;
+}
+
+/* Стиль для контурной кнопки */
+.btn--outlin {
+    /* Свойства для выравнивания */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    /* Внешний вид */
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 2px solid #333; /* <-- ИЗМЕНЕНИЕ ЗДЕСЬ */
+    
+    /* Размеры и прочее */
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* Эффект при наведении на контурную кнопку */
+.btn--outlin:hover {
+    background-color: rgba(63, 62, 62, 0.135); /* Легкий белый фон при наведении */
+    text-decoration: none;
+}
+
+
+
+.btn--outline {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 500;
+    display: flex;
+    background: transparent;
+    color: var(--color-text-primary); 
+    /* line-height: 24px; */
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 8px;
+    height: 36px;
+    line-height: 24px;
+    box-sizing: border-box;
+}
+
+.btn--outline:hover {
+    background: rgba(0, 0, 0, 0.09);
+    text-decoration: none;
+}
+/* Инпуты */
+.input {
+    
+    height: 32px;
+    border: 1px solid var(--color-border-input); /* Рамка полей ввода */
+    border-radius: 8px;
+    padding: 0 8px;
+    font-size: 1rem;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.input:focus {
+    outline: 2px solid var(--color-bg-muted); /* Цвет обводки при фокусе */
+    border-color: var(--color-bg-muted); /* Синхронизация цвета границы */
+}
+
+.input--block {
+    width: 100%;
+}
+
+/* Лейблы */
+.label {
+    display: block;
+    font-weight: 500;
+    margin: 0;
+    color: var(--color-text-primary); /* Основной текст для лейблов */
+}
+
+/* Заголовки */
+.title {
+    margin: 0;
+    color: var(--color-text-primary); /* Основной текст для заголовков */
+}
+
+.title--center {
+    text-align: center;
+}
+
+/* Сообщения */
+.message {
+    padding: .75rem;
+    border-radius: 5px;
+    text-align: center;
+    margin: 0;
+}
+
+.message--error {
+    color: var(--color-error-text);
+    background: var(--color-error-bg);
+    border: 1px solid var(--color-border-default);
+}
+
+.message--success {
+    color: var(--color-success-text);
+    background: var(--color-success-bg);
+    border: 1px solid var(--color-border-default);
+}
+
+/* === LAYOUT КОМПОНЕНТЫ === */
+
+/* Шапка */
+.site-header {
+    background: var(--color-bg-surface); /* Фон шапки */
+    border-bottom: 1px solid var(--color-border-default); /* Стандартная граница */
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.site-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* === Стили для навигации с иконками === */
+.site-header nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Отступ между элементами */
+}
+
+.nav-item-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Отступ между иконкой и текстом */
+    text-decoration: none;
+    color: var(--color-text-primary);
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-item-icon:hover {
+    color: var(--color-brand-coral);
+}
+
+.nav-item-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* === Стили для нового композитного логотипа === */
+
+/* Главный контейнер логотипа (тег <a>) */
+.site-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.site-logo:hover {
+    transform: scale(1.03);
+}
+
+/* Обертка для иконки, которая и является цветным кругом */
+.logo-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background-color: var(--color-logo-bg); /* Фон иконки логотипа */
+    border-radius: 50%;
+}
+
+/* Стили самой иконки внутри круга */
+.logo-icon-wrapper svg {
+    color: var(--color-bg-surface); /* Светлый текст для иконки */
+    width: 30px;
+    height: 30px;
+    stroke-width: 2;
+}
+
+/* Стили для текста "Весна" */
+.logo-text {
+    font-family: 'Pacifico', cursive;
+    font-size: 2.2rem;
+    color: var(--color-text-accent); /* Акцентный текст для логотипа */
+    line-height: 1;
+}
+
+.site-header nav a {
+    text-decoration: none;
+    color: var(--color-text-primary); /* Основной текст для ссылок */
+    font-weight: 500;
+}
+
+.site-header nav a:hover {
+    /* text-decoration: underline; */
+}
+/* === СТИЛИ ДЛЯ ВЫПАДАЮЩЕГО СПИСКА ЯЗЫКОВ === */
+
+/* Делаем саму навигацию гибкой, чтобы элементы выстроились в ряд */
+.site-header nav {
+    display: flex;
+    align-items: center;
+}
+
+/* Контейнер для кнопки и списка */
+.lang-dropdown {
+    position: relative; /* Необходимо для позиционирования списка */
+    display: inline-block;
+    /* margin-right: 1.5rem; */
+}
+
+/* Кнопка с иконкой */
+.lang-dropdown-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.lang-dropdown-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.lang-dropdown-btn svg {
+    color: var(--color-text-primary);
+}
+
+/* Сам выпадающий список */
+.lang-dropdown-content {
+    display: none; /* Скрыт по умолчанию */
+    position: absolute;
+    right: 0;
+    top: 120%; /* Расположение под кнопкой */
+    background-color: var(--color-bg-surface);
+    min-width: 104px; /* Уменьшим немного ширину */
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+    z-index: 10;
+    border-radius: 8px;
+    overflow: hidden; /* Чтобы скруглить углы у ссылок */
+    border: 1px solid var(--color-border-default);
+}
+
+/* Класс для показа списка через JS */
+.lang-dropdown-content.show {
+    display: block;
+}
+
+/* Ссылки внутри списка */
+.lang-dropdown-content a {
+    color: var(--color-text-primary);
+    padding: 7px 10px; /* Немного уменьшим отступы */
+    text-decoration: none;
+    display: block;
+    font-weight: 500;
+    text-align: left;
+    transition: background-color 0.2s;
+    margin-left: 0;
+    margin-left: 1px;
+}
+
+.lang-dropdown-content a:hover {
+    background-color: #f5f5f5;
+}
+
+/* Стиль для активной ссылки (убрали фон, оставили только жирный шрифт и цвет) */
+.lang-dropdown-content a.active {
+    font-weight: 600;
+    color: var(--color-brand-coral);
+}
+.lang-dropdown-content a.active:hover {
+    background-color: #fdf0ee; /* Легкий коралловый/красноватый фон */
+}
+
+.main-content {
+    padding: 0;
+    flex-grow: 1;
+}
+
+/* === СТИЛИ ДЛЯ HERO SECTION === */
+
+/* === СТИЛИ ДЛЯ HERO SECTION (НОВАЯ ВЕРСИЯ С 2 КОЛОНКАМИ) === */
+
+.hero-section {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-image: url('https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    background-size: cover;
+    background-position: center;
+    display: flex; /* Используем flex для вертикального центрирования .container */
+    align-items: center;
+    color: var(--color-white);
+}
+
+/* Затемняющий оверлей остается без изменений */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Немного увеличил затемнение для контраста */
+    z-index: 1;
+}
+
+/* .container внутри hero-секции должен быть поверх оверлея */
+.hero-section .container {
+    position: relative;
+    z-index: 2;
+}
+
+/* .hero-content теперь является flex-контейнером для наших колонок */
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Распределяет колонки по краям */
+    gap: 2rem; /* Отступ между колонками */
+}
+
+/* Стили для левой и правой колонок */
+.hero-column-left {
+    flex: 1; /* Каждая колонка пытается занять одинаковое пространство */
+    text-align: left; /* Выравниваем текст по левому краю */
+}
+
+/* Стили для правой колонки */
+.hero-column-right {
+    flex: 1;
+    max-width: 450px;
+    font-weight: 500;
+    /* --- НОВЫЕ СТРОКИ ДЛЯ ЦЕНТРИРОВАНИЯ --- */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Центрирует дочерние элементы (и текст, и кнопку) по горизонтали */
+    text-align: center;  /* Дополнительно центрирует многострочный текст внутри параграфа */
+}
+
+/* Заголовок теперь больше и выразительнее */
+.hero-title {
+    font-size: 3.5rem; /* Увеличиваем размер */
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0;
+    color: #fff;
+}
+
+.hero-title-accent {
+    font-family: 'Pacifico', cursive;
+    font-weight: normal;
+    font-size: 3.5rem;
+    display: block;
+    color: #fff; 
+    opacity: 0.9;
+}
+
+/* Подзаголовок в правой колонке */
+.hero-subheading {
+    font-size: 1.4rem; /* <-- ИЗМЕНЕНИЕ: Увеличили размер шрифта */
+    margin: 0 0 1.5rem 0;
+    color: var(--color-text-on-dark); /* Используем переменную для цвета */
+    line-height: 1.8; /* <-- ИЗМЕНЕНИЕ: Немного увеличили межстрочный интервал */
+}
+
+/* Кнопка теперь не растягивается на всю ширину */
+.hero-section .btn {
+    display: inline-block; /* Возвращаем к строчно-блочному поведению */
+    width: auto; /* Ширина по содержимому */
+    background-color: var(--color-brand-orange);
+}
+
+.hero-section .btn:hover {
+    background-color: #f04827;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+    .hero-content {
+        flex-direction: column; /* Ставим колонки друг под другом */
+        text-align: center; /* Центрируем весь текст */
+    }
+
+    .hero-column-left, .hero-column-right {
+        text-align: center; /* Центрируем текст внутри колонок */
+        max-width: 500px; /* Ограничиваем ширину для центрированного текста */
+    }
+
+    .hero-title {
+        font-size: 2.5rem; /* Немного уменьшаем заголовок на мобильных */
+    }
+}
+/* 2. Стили для текстовой секции */
+.info-section {
+    padding: 4rem 0;
+    background-color: var(--color-surface); /* Белый фон */
+    text-align: center;
+}
+
+.info-text {
+    max-width: 900px;
+    margin: 1rem auto 0 auto;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+/* 3. Стили для секции с картинками и текстом */
+.features-section {
+    padding: 4rem 0;
+    background-color: var(--color-background); /* Светло-серый фон */
+}
+
+.feature-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    margin-bottom: 4rem;
+}
+
+/* Чередуем порядок для второго, четвертого и т.д. элемента */
+.feature-item--reversed {
+    direction: rtl; /* Простой трюк для смены порядка колонок */
+}
+.feature-item--reversed > * {
+    direction: ltr; /* Возвращаем нормальное направление текста дочерним элементам */
+}
+
+
+.feature-image img {
+    width: 100%;
+    height: 270px;
+    border-radius: 38px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+
+    /* --- ВОТ РЕШЕНИЕ --- */
+    object-fit: cover; /* Масштабирует изображение с сохранением пропорций и обрезает лишнее */
+}
+
+.feature-content h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.feature-content p {
+    line-height: 1.7;
+}
+
+
+
+/* Подвал */
+.site-footer {
+    text-align: center;
+    padding: 1rem 0;
+    background: var(--color-brand-olive); /* Основной брендовый цвет для футера */
+    color: var(--color-text-on-dark); /* Светлый текст */
+    font-size: 0.9rem;
+}
+
+/* Контейнер формы */
+.form-container {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid var(--color-border-default); /* Стандартная граница */
+    border-radius: 42px;
+    background: var(--color-bg-surface); /* Фон формы */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* === Стили для страницы профиля === */
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* .profile-avatar-form {
+    flex-shrink: 0;
+} */
+
+.profile-avatar-wrapper {
+    position: relative;
+    cursor: pointer;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #ffffff;
+    display: block;
+    transition: border-color 0.3s ease;
+}
+
+.profile-avatar-wrapper:hover {
+    border-color: #ffffff;
+    /* width: 192px;
+    height: 192px; */
+}
+
+.profile-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-avatar-overlay {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* width: 100%;
+    height: 100%; */
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+
+.profile-avatar-wrapper:hover .profile-avatar-overlay {
+    opacity: 1;
+}
+
+.profile-avatar-input {
+    display: none;
+}
+
+.profile-info {
+    flex-grow: 1;
+    min-width: 0;
+    
+    /* Новые свойства для управления отступами */
+    display: flex;
+    flex-direction: column; /* Располагаем элементы в колонку (друг под другом) */
+    gap: 0.5rem;          /* <-- ЭТО И ЕСТЬ ОТСТУП МЕЖДУ ЭЛЕМЕНТАМИ. Можете менять это значение. */
+}
+
+.profile-username {
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    font-size: 2.5rem;
+    margin: 0;
+    word-break: break-word;
+}
+
+.profile-reg-date {
+    font-weight: 500;
+    font-size: 1.3rem;
+    color: var(--color-text-primary);
+    margin-top: 0rem;
+    margin-bottom: 0rem;
+}
+
+.editable-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7b7777;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    height: 28px;
+    width: 28px;
+    padding: 4px;
+    border-radius: 7px;
+    flex-shrink: 0;
+}
+
+.edit-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+.editable-field:hover .edit-btn {
+    opacity: 1;
+}
+
+.profile-description {
+    font-weight: 500;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    word-break: break-word;
+}
+
+.profile-card {
+    margin-top: 1.5rem;
+    padding: 2rem;
+    background-color: var(--color-bg-surface);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-border-default);
+}
+
+.profile-card-title {
+    font-size: 1.5rem;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border-default);
+}
+
+/* Стили для полей ввода в режиме редактирования */
+.editable-field .input, 
+.editable-field .textarea {
+    font-weight: 500;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box; /* <-- ВОТ РЕШЕНИЕ */
+}
+
+.editable-field .textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .profile-username {
+        font-size: 2rem;
+    }
+    
+    .editable-field {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .edit-btn {
+        opacity: 1;
+        align-self: flex-end;
+    }
+}
+
+
+
+/* .profile-username {
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    font-size: 2.5rem;
+    margin: 0;
+    word-break: break-word;
+} */
+
+
+/* Специальный стиль для поля редактирования имени пользователя */
+/* Специальный стиль для поля редактирования имени пользователя */
+.input.profile-username-input {
+    width: 270px !important;            /* Задаем ширину 250px */
+    font-size: 2.5rem !important;        /* Такой же размер шрифта, как у заголовка .profile-username */
+    font-weight: 700 !important;         /* Жирный шрифт (700 - стандартное значение для bold) */
+    padding: 3px !important;             /* Устанавливаем желаемый отступ */
+    /* --- НОВЫЕ СТРОКИ ДЛЯ ПРОЗРАЧНОСТИ --- */
+     /* Делаем фон полностью прозрачным */
+    border: 3px solid var(--color-text-primary);       /* <-- ВОЗВРАЩАЕМ РАМКУ. Можете настроить цвет, толщину и стиль */
+    border-radius: 8px;
+    outline: none;                 /* Убираем стандартную обводку при фокусе (обычно синяя) */
+    height: 40px;
+    color: var(--color-text-primary);
+}
+
+
+
+
+
+
+
+/* === Стили для страницы "О нас" === */
+.about-section, .team-section, .contact-section {
+    margin-bottom: 4rem;
+}
+
+.about-text {
+    max-width: 720px;
+    margin: 1rem auto;
+    text-align: center;
+    line-height: 1.7;
+    font-size: 1.1rem;
+    color: #444;
+}
+
+.team-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.team-member-card {
+    background-color: var(--color-bg-surface);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-border-default);
+    padding: 2rem;
+    text-align: center;
+    width: 220px;
+}
+
+.team-member-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    border: 3px solid #eee;
+}
+
+
+.team-member-name {
+    font-size: 1.4rem;
+    margin: 0 0 0.25rem 0;
+}
+
+.team-member-role {
+    color: var(--color-brand-coral);
+    font-weight: 500;
+    margin: 0 0 0.5rem 0;
+}
+
+.team-member-group {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.contact-card {
+    max-width: 600px;
+    margin: 2rem auto 0 auto;
+    padding: 2rem;
+    background-color: var(--color-bg-surface);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-border-default);
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.contact-item svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-text-primary);
+    flex-shrink: 0;
+}
+
+.contact-item a {
+    color: var(--color-brand-coral);
+    text-decoration: none;
+}
+
+.contact-item a:hover {
+    text-decoration: underline;
+}
+
+
+
+
+
+
+
+/* === Стили для содержимого футера === */
+.footer-content {
+    display: flex;
+    justify-content: center; /* <-- Изменено на 'center' для выравнивания по центру */
+    align-items: center;
+    gap: 0; /* Убираем gap, так как отступ задан инлайн */
+}
+
+.site-footer a {
+    color: var(--color-text-on-dark);
+    text-decoration: none;
+    transition: text-decoration 0.2s ease;
+}
+
+.site-footer a:hover {
+    text-decoration: underline;
+}
