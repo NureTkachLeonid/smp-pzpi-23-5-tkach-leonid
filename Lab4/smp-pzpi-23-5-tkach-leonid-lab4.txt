@@ -1,0 +1,782 @@
+МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+КАФЕДРА ПРОГРАМНОЇ ІНЖЕНЕРІЇ
+
+
+
+
+Звіт
+з лабораторної роботи № 4 з дисципліни
+Скриптові мови програмування
+
+
+
+
+
+Виконала:                                               Перевірив:
+ст. гр. ПЗПІ-23-5                                       ст. викладач кафедри ПІ
+Ткач Леонід                                             Сокорчук Ігор Петрович
+
+
+
+
+
+
+
+
+Харків 2025
+
+1 ІСТОРІЯ ЗМІН
+№
+Дата
+Версія звіту
+Опис змін та виправлень
+1
+16.06.2025
+0.1
+Додано опис виконаної роботи, висновки, додатки.
+
+
+
+---
+
+2 ЗАВДАННЯ
+
+Використовуючи матеріал попередніх лабораторних робіт, потрібно додати
+такий функціонал:
+1. Прибрати дублювання шапки і підвалу сайту (якщо воно є).
+2. Додати сторінку логіна. Обмежити доступ до сайту не залогіненим
+користувачам.
+3. Додати сторінку профілю з можливістю завантажити фото.
+
+---
+
+3 ОПИС ВИКОНАНОЇ РОБОТИ
+
+Код складається з кількох файлів, які забезпечують функціональність інтернет-магазину та авторизації користувачів. Основні файли включають: **index.php**, **main.php**, **config.php**, **credentials.php**, **profile.php** (для даних), **cart.php**, **checkout.php**, **login.php**, **logout.php**, **page404.php**, **products.php**, **profile.php** (для сторінки) та **register.php**. Нижче наведено детальний опис кожного компонента.
+
+**Файл `header.php`** відповідає за відображення шапки сайту та перевірку авторизації користувача. Він включає мета-теги, підключення CSS та навігаційну панель. Реалізовано перевірку, чи авторизований користувач, і якщо ні, то відбувається перенаправлення на сторінку помилки 404, за винятком сторінок входу та реєстрації. Навігація динамічно відображає посилання "Вийти" або "Вхід" залежно від статусу авторизації.
+
+**Файл `footer.php`** відповідає за відображення підвалу сайту, який містить посилання на основні розділи, завершуючи HTML-структуру.
+
+**Файл `index.php`** слугує головною сторінкою магазину. Він підключає конфігурацію, включає `header.php` та `footer.php`, а в тілі відображає привітання та кнопку "Перейти до покупок", яка веде на сторінку товарів.
+
+**Файл `main.php`** відповідає за маршрутизацію сторінок на основі параметра `page` у запиті. Він ініціалізує сесію, включає `header.php` та `footer.php`, а також використовує конструкцію `switch` для підключення відповідних сторінок (`cart.php`, `profile.php`, `products.php`, `login.php`, `register.php`, `logout.php`, `checkout.php`). За замовчуванням, якщо користувач не авторизований, відображається `page404.php`, інакше — `index.php`.
+
+**Файл `config.php`** відповідає за ініціалізацію бази даних (SQLite: store.db), управління товарами та кошиком. Він створює таблиці `products` та `cart_items`, якщо їх не існує, і додає початкові товари. Містить функції для отримання підключення до БД (`get_db`), закриття підключення (`close_db`), отримання товарів (`get_products`), отримання елементів кошика (`get_cart_items`), додавання товарів до кошика (`add_to_cart`), оновлення елементів кошика (`update_cart_item`) та підрахунку загальної суми кошика (`calculate_cart_total`).
+
+**Файл `credentials.php`** містить статичні облікові дані для авторизації користувачів.
+
+**Файл `profile.php`** (з папки `db`) містить статичні дані профілю користувача.
+
+**Файл `cart.php`** відповідає за сторінку кошика. Він обробляє POST-запити для видалення товарів з кошика, отримує дані кошика та загальну суму. Сторінка відображає таблицю з обраними товарами або повідомлення про порожній кошик. Передбачено виведення повідомлення про успішне замовлення після його оформлення.
+
+**Файл `checkout.php`** відповідає за оформлення замовлення. Він очищає кошик, встановлює прапорець успішного замовлення у сесії та перенаправляє користувача на сторінку кошика.
+
+**Файл `login.php`** відповідає за сторінку входу. Обробляє POST-запити, перевіряючи введені дані з `credentials.php`. У разі успішної авторизації встановлює сесію користувача та перенаправляє на головну сторінку. Відображає повідомлення про помилку у разі невірних даних або відсутності введених полів. Містить посилання на сторінку реєстрації.
+
+**Файл `logout.php`** відповідає за вихід із системи, знищуючи сесію користувача.
+
+**Файл `page404.php`** відповідає за сторінку помилки 404, відображаючи повідомлення про помилку та посилання на сторінки входу та реєстрації.
+
+**Файл `products.php`** відповідає за сторінку товарів. Обробляє POST-запити для додавання товарів до кошика. Відображає список доступних товарів у вигляді форм, де користувач може вказати кількість та додати товар. Містить кнопку для переходу до кошика.
+
+**Файл `profile.php`** (з папки `pages`) відповідає за сторінку профілю користувача. Він перевіряє авторизацію користувача, підключає дані профілю. Обробляє POST-запити для оновлення даних профілю, включаючи завантаження зображення профілю. Перевіряє коректність введених даних (довжина імені, вік, довжина біографії, тип файлу зображення) та зберігає їх. Відображає поточне фото профілю та форму для його редагування.
+
+**Файл `register.php`** відповідає за сторінку реєстрації. Наразі він лише повертає повідомлення "Реєстрація тимчасово недоступна" при спробі POST-запиту. Відображає форму реєстрації з полями для імені користувача та пароля, а також посилання на сторінку входу.
+
+---
+
+4 ВИСНОВКИ
+
+У рамках лабораторної роботи було реалізовано додатковий функціонал для веб-сайту з метою оптимізації структури, забезпечення безпеки та розширення можливостей користувацького інтерфейсу. Зокрема, було усунуто дублювання шапки та підвалу сайту шляхом винесення їх у окремі компоненти (`header.php` та `footer.php`), що сприяло підвищенню читабельності коду, полегшенню його підтримки та зменшенню надлишковості.
+
+Для забезпечення обмеженого доступу до сайту було додано сторінку логіну (`login.php`), яка дозволяє користувачам аутентифікуватися. Реалізовано механізм обмеження доступу до контенту для неавторизованих користувачів, що підвищило рівень безпеки та персоналізації веб-додатку.
+
+Крім того, створено сторінку профілю користувача (`pages/profile.php`) з функціоналом завантаження фотографії. Ця функція дозволяє користувачам персоналізувати свої профілі, завантажуючи зображення, які зберігаються на сервері.
+
+Запроваджені зміни сприяють підвищенню зручності, безпеки та функціональності веб-сайту, а також відповідають сучасним стандартам розробки веб-додатків. Робота дозволила поглибити знання у сфері оптимізації коду, роботи з аутентифікацією та обробки файлів у веб-розробці.
+
+---
+
+ДОДАТОК А
+ВІДЕОЗАПИС
+
+Відеозапис презентації результатів лабораторної роботи: https://youtu.be/1tSJrO8G0mM
+
+Хронологічний опис відеозапису:
+00:00 - Вітання та завдання
+00:10 - Демонстрація роботи програми
+
+---
+
+ДОДАТОК Б
+Графічні матеріали
+
+Рисунок Б.1 — Сторінка реєстрації
+
+Рисунок Б.2 — Сторінка входу
+
+Рисунок Б.3 — Головна сторінка
+
+Рисунок Б.4 — Сторінка товарів
+
+Рисунок Б.5 — Сторінка кошику
+
+Рисунок Б.6 — Сторінка профілю
+
+---
+
+ДОДАТОК В
+Програмний код
+
+В.1 {./header.php}
+GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab4/header.php
+<?php
+session_start();
+
+require_once __DIR__ . '/../config/language.php';
+?>
+<!DOCTYPE html>
+<html lang="<?= $_SESSION['lang'] ?? 'ua' ?>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= t('page_title') ?></title>
+    <link rel="icon" href="/icons/favicon-color.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="site-logo">
+                <div class="logo-icon-wrapper">
+                    <?php include __DIR__ . '/../public/icons/nut.svg'; ?>
+                </div>
+                <span class="logo-text"><?= t('page_title') ?></span>
+            </a>
+            <nav>
+
+
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="/products.php" class="btn btn--outline" title="<?= t('products') ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg>
+                        <span><?= t('products') ?></span>
+                    </a>
+                    <a href="/cart.php" class="btn btn--outline" title="<?= t('cart') ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 11-1 9"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/><path d="M4.5 15.5h15"/><path d="m5 11 4-7"/><path d="m9 11 1 9"/></svg>
+                        <span><?= t('cart') ?></span>
+                    </a>
+                <?php else: ?>
+                    <a href="/login.php" class="btn btn--outline"><?= t('login') ?></a>
+                    <a href="/register.php" class="btn btn--outline"><?= t('register') ?></a>
+                <?php endif; ?>
+
+                <div class="lang-dropdown">
+                    <button class="lang-dropdown-btn" id="langBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54"/><path d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17"/><path d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05"/><circle cx="12" cy="12" r="10"/></svg>
+                    </button>
+                    <div class="lang-dropdown-content" id="langDropdownContent">
+                        <a href="?lang=ua" class="<?= ($_SESSION['lang'] == 'ua') ? 'active' : '' ?>">Українська</a>
+                        <a href="?lang=en" class="<?= ($_SESSION['lang'] == 'en') ? 'active' : '' ?>">English</a>
+                    </div>
+                </div>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="/profile.php" class="btn btn--outline" title="<?= t('profile') ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg>
+                        <span><?= t('profile') ?></span>
+                    </a>
+                <?php endif; ?>
+                
+            </nav>
+        </div>
+    </header>
+    <main class="main-content">
+
+В.2 {./index.php}
+GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab4/main.php
+<?php require_once __DIR__ . '/../includes/header.php'; ?>
+
+<main class="page-content">
+
+<section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+
+                <div class="hero-column-left">
+                    <h1 class="hero-title">
+                        <span class="hero-title-accent" style="display: flex; flex-direction: row;"><?= t('hero_accent') ?></span>
+                        <?= t('hero_title') ?>
+                    </h1>
+                </div>
+
+                <div class="hero-column-right">
+                    <p class="hero-subheading"><?= t('hero_subtitle') ?></p>
+                    <a href="/register.php" class="btn"><?= t('join_us') ?></a>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="container">
+            <h2 class="title title--center"><?= t('our_philosophy_title') ?></h2>
+            <p class="info-text">
+                <?= t('our_philosophy_text') ?>
+            </p>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <div class="container">
+            <div class="feature-item">
+                <div class="feature-image">
+                    <img src="https://images.unsplash.com/photo-1643553110265-e76e397643a5" alt="Молочные продукты">
+                </div>
+                <div class="feature-content">
+                    <h3 class="title"><?= t('dairy_title') ?></h3>
+                    <p><?= t('dairy_text') ?></p>
+                </div>
+            </div>
+            
+            <div class="feature-item feature-item--reversed">
+                <div class="feature-image">
+                    <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff" alt="Ремесленный хлеб">
+                </div>
+                <div class="feature-content">
+                    <h3 class="title"><?= t('bread_title') ?></h3>
+                    <p><?= t('bread_text') ?></p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-image">
+                    <img src="https://images.unsplash.com/photo-1557844352-761f2565b576" alt="Сезонные овощи и фрукты">
+                </div>
+                <div class="feature-content">
+                    <h3 class="title"><?= t('veg_title') ?></h3>
+                    <p><?= t('veg_text') ?></p>
+                </div>
+            </div>
+            </div>
+    </section>
+
+</main>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+
+В.3 {./db/config.php}
+GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab4/db/config.php
+<?php
+
+try {
+    $db_path = __DIR__ . '/../database.sqlite';
+    $pdo = new PDO('sqlite:' . $db_path);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        avatar TEXT,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        total_amount REAL NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        product_name TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        price_at_purchase REAL NOT NULL,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+    )");
+
+} catch (PDOException $e) {
+    die("Ошибка подключения к базе данных: " . $e->getMessage());
+}
+
+В.4 {./pages/cart.php}
+GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab4/pages/cart.php
+<?php
+require_once __DIR__ . '/../includes/header.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /login.php');
+    exit;
+}
+
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (isset($_SESSION['message'])) {
+    echo '<div class="message success">' . $_SESSION['message'] . '</div>';
+    unset($_SESSION['message']);
+}
+if (isset($_SESSION['error'])) {
+    echo '<div class="message error">' . $_SESSION['error'] . '</div>';
+    unset($_SESSION['error']);
+}
+
+$cart_items = $_SESSION['cart'] ?? [];
+$total_price = 0;
+?>
+
+<div class="container" style="padding: 2rem 0;">
+    <h1 class="title title--center"><?= t('cart') ?></h1>
+    <p style="text-align: center;"><?= t('cart_page_info') ?></p>
+
+    <?php if (empty($cart_items)): ?>
+        <div class="profile-card" style="margin-top: 2rem;">
+            <p style="text-align: center;"><?= t('cart_empty') ?></p>
+        </div>
+    <?php else: ?>
+        <div class="profile-card" style="margin-top: 2rem;">
+            <h3 class="profile-card-title"><?= t('cart_items') ?></h3>
+            <table class="table" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px; text-align: left;"><?= t('product_name_header') ?></th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px; text-align: left;"><?= t('price') ?></th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px; text-align: left;"><?= t('quantity') ?></th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px; text-align: left;"><?= t('total') ?></th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($cart_items as $product_id => $item): ?>
+                        <?php
+                            $item_total = $item['price'] * $item['quantity'];
+                            $total_price += $item_total;
+                        ?>
+                        <tr>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;"><?= htmlspecialchars($item['name']) ?></td>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;">$<?= number_format($item['price'], 2) ?></td>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;">
+                                <form action="cart_handler.php" method="post" style="display: inline-flex; align-items: center;">
+                                    <input type="hidden" name="action" value="update_quantity">
+                                    <input type="hidden" name="product_id" value="<?= $product_id ?>">
+                                    <input type="number" name="quantity" value="<?= htmlspecialchars($item['quantity']) ?>" min="0" class="form-input" style="width: 60px; margin-right: 5px;" onchange="this.form.submit()">
+                                </form>
+                            </td>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;">$<?= number_format($item_total, 2) ?></td>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;">
+                                <form action="cart_handler.php" method="post" style="display: inline;">
+                                    <input type="hidden" name="action" value="remove">
+                                    <input type="hidden" name="product_id" value="<?= $product_id ?>">
+                                    <button type="submit" class="btn btn--small btn--danger"><?= t('remove') ?></button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="border-top: 1px solid #ddd; padding: 8px; text-align: right;"><strong><?= t('total_cart_price') ?>:</strong></td>
+                        <td colspan="2" style="border-top: 1px solid #ddd; padding: 8px;"><strong>$<?= number_format($total_price, 2) ?></strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <form action="cart_handler.php" method="post" style="display: inline;">
+                    <input type="hidden" name="action" value="clear">
+                    <button type="submit" class="btn btn--outlin btn--danger"><?= t('clear_cart') ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/products.php" class="btn"><?= t('continue_shopping') ?></a>
+            <a href="/checkout.php" class="btn <?= empty($cart_items) ? 'btn--disabled' : '' ?>"><?= t('checkout') ?></a>        </div>
+    <?php endif; ?>
+</div>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+
+В.5 {./pages/login.php}
+GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab4/pages/login.php
+<?php
+require_once __DIR__ . '/../includes/header.php'; // Подключаем хедер (он сам запустит сессию)
+
+// Если пользователь уже вошел, перенаправляем
+if (isset($_SESSION['user_id'])) {
+    header('Location: /dashboard.php');
+    exit;
+}
+?>
+<div class="form-container">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        <h2 class="title title--center"><?= t('form_login_title') ?></h2>
+        
+        <form action="/login_handler.php" method="post">
+            <?php
+                if (isset($_GET['error']) && $_GET['error'] == 'invalid_credentials') {
+                    echo '<p class="message message--error">' . t('error_invalid_credentials') . '</p>';
+                }
+                if (isset($_GET['success']) && $_GET['success'] == 'registered') {
+                    echo '<p class="message message--success">' . t('success_registered') . '</p>';
+                }
+            ?>
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label for="username" class="label"><?= t('username') ?></label>
+                        <input type="text" id="username" name="username" required class="input input--block">
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label for="password" class="label"><?= t('password') ?></label>
+                        <input type="password" id="password" name="password" required class="input input--block">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn "><?= t('button_login') ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+
+В.6 {./pages/products.php}
+GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab4/pages/products.php
+<?php
+require_once __DIR__ . '/../includes/header.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /login.php');
+    exit;
+}
+
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
+?>
+
+<div class="container" style="padding: 2rem 0;">
+    <h1 class="title title--center"><?= t('products') ?></h1>
+    <p style="text-align: center;"><?= t('products_page_info') ?></p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem;">
+        <div class="profile-card">
+            <form action="cart_handler.php" method="post">
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="product_id" value="1">
+                <input type="hidden" name="product_name" value="<?= t('product_dairy_title') ?>">
+                <input type="hidden" name="price" value="5.99">
+
+                <h3 class="profile-card-title"><?= t('product_dairy_title') ?></h3>
+                <p><?= t('product_dairy_description') ?></p>
+                <p><strong><?= t('price') ?>: $5.99</strong></p>
+                <input type="number" name="quantity" value="1" min="1" class="form-input" style="width: 100px; margin-bottom: 1rem;">
+                <button type="submit" class="btn btn--block"><?= t('add_to_cart') ?></button>
+            </form>
+        </div>
+
+        <div class="profile-card">
+            <form action="cart_handler.php" method="post">
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="product_id" value="2">
+                <input type="hidden" name="product_name" value="<?= t('product_bread_title') ?>">
+                <input type="hidden" name="price" value="3.49">
+
+                <h3 class="profile-card-title"><?= t('product_bread_title') ?></h3>
+                <p><?= t('product_bread_description') ?></p>
+                <p><strong><?= t('price') ?>: $3.49</strong></p>
+                <input type="number" name="quantity" value="1" min="1" class="form-input" style="width: 100px; margin-bottom: 1rem;">
+                <button type="submit" class="btn btn--block"><?= t('add_to_cart') ?></button>
+            </form>
+        </div>
+
+        <div class="profile-card">
+            <form action="cart_handler.php" method="post">
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="product_id" value="3">
+                <input type="hidden" name="product_name" value="<?= t('product_veg_title') ?>">
+                <input type="hidden" name="price" value="7.29">
+
+                <h3 class="profile-card-title"><?= t('product_veg_title') ?></h3>
+                <p><?= t('product_veg_description') ?></p>
+                <p><strong><?= t('price') ?>: $7.29</strong></p>
+                <input type="number" name="quantity" value="1" min="1" class="form-input" style="width: 100px; margin-bottom: 1rem;">
+                <button type="submit" class="btn btn--block"><?= t('add_to_cart') ?></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+
+В.7 {./pages/profile.php}
+GitHub репозиторій: https://github.com/NureTkachLeonid/smp-pzpi-23-5-tkach-leonid/blob/main/Lab4/pages/profile.php
+<?php
+require_once __DIR__ . '/../includes/header.php';
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /login.php');
+    exit;
+}
+require_once __DIR__ . '/../config/db.php';
+
+$stmt = $pdo->prepare("SELECT username, created_at, avatar, description FROM users WHERE id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$user_info = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user_info) {
+    header('Location: /logout.php');
+    exit;
+}
+
+$avatar_placeholder = 'https://images.unsplash.com/photo-1634986666676-ec8fd927c23d?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+$user_avatar = $user_info['avatar'] ?? $avatar_placeholder;
+
+$orders_stmt = $pdo->prepare("SELECT id, order_date, total_amount FROM orders WHERE user_id = ? ORDER BY order_date DESC");
+$orders_stmt->execute([$_SESSION['user_id']]);
+$purchase_history = $orders_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+?>
+
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+    <div class="profile-header">
+        <form action="/upload_avatar.php" method="post" enctype="multipart/form-data" class="profile-avatar-form">
+            <label for="avatar-upload" class="profile-avatar-wrapper">
+                <img src="<?= htmlspecialchars($user_avatar) ?>" alt="<?= t('profile_avatar') ?>" class="profile-avatar">
+                <div class="profile-avatar-overlay">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                </div>
+            </label>
+            <input type="file" name="avatar" id="avatar-upload" accept="image/*" class="profile-avatar-input">
+        </form>
+
+        <div class="profile-info">
+            <div class="editable-field" id="username-field" style="align-items: center; gap: 0.5rem;">
+                <h1 class="profile-username" data-value="<?= htmlspecialchars($user_info['username']) ?>">
+                    <?= htmlspecialchars($user_info['username']) ?>
+                </h1>
+                <button class="edit-btn" type="button" style="margin-top: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+                </button>
+            </div>
+            <p class="profile-reg-date"><?= t('profile_reg_date') ?>: <?= date('d.m.Y', strtotime($user_info['created_at'])) ?></p>
+
+            <div style="display: flex; gap: 1rem;">
+                <a href="/logout.php" class="btn" style="width: content;" title="<?= t('logout') ?>">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+                    <span><?= t('logout') ?></span>
+                </a>
+                <a href="/change_password.php" class="btn btn--outlin" style="width: content; " title="<?= t('change_password') ?>">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+                    <span><?= t('change_password') ?></span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-card">
+        <h2 class="profile-card-title"><?= t('description') ?></h2>
+        <div class="editable-field" id="description-field">
+            <p class="profile-description" data-value="<?= htmlspecialchars($user_info['description'] ?? '') ?>">
+                <?= !empty($user_info['description']) ? htmlspecialchars($user_info['description']) : t('no_description') ?>
+            </p>
+            <button class="edit-btn" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="profile-card">
+        <h2 class="profile-card-title"><?= t('purchase_history') ?></h2>
+        <?php if (empty($purchase_history)): ?>
+            <p><?= t('purchase_history_info') ?></p>
+        <?php else: ?>
+            <table class="table" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px; text-align: left;">Order ID</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px; text-align: left;">Date</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px; text-align: left;">Total</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px; text-align: left;">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($purchase_history as $order): ?>
+                        <tr>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;"><?= htmlspecialchars($order['id']) ?></td>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;"><?= date('d.m.Y H:i', strtotime($order['order_date'])) ?></td>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;">$<?= number_format($order['total_amount'], 2) ?></td>
+                            <td style="border-bottom: 1px solid #eee; padding: 8px;">
+                                <button type="button" class="btn btn--small view-order-details" data-order-id="<?= $order['id'] ?>">View Details</button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <div id="orderDetailsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+                <div style="background:#fff; padding:20px; border-radius:10px; max-width:600px; width:90%;">
+                    <h3>Order Details for Order #<span id="modalOrderId"></span></h3>
+                    <div id="modalOrderItems"></div>
+                    <button onclick="document.getElementById('orderDetailsModal').style.display='none'">Close</button>
+                </div>
+            </div>
+
+            <script>
+                document.querySelectorAll('.view-order-details').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const orderId = this.dataset.orderId;
+                        document.getElementById('modalOrderId').textContent = orderId;
+                        const modalOrderItems = document.getElementById('modalOrderItems');
+                        modalOrderItems.innerHTML = '<p>Loading...</p>'; 
+
+                        fetch(`/fetch_order_details.php?order_id=${orderId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                modalOrderItems.innerHTML = ''; 
+                                if (data.length > 0) {
+                                    let tableHtml = '<table class="table" style="width:100%;">';
+                                    tableHtml += '<thead><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead><tbody>';
+                                    data.forEach(item => {
+                                        tableHtml += `<tr><td>${item.product_name}</td><td>${item.quantity}</td><td>$${parseFloat(item.price_at_purchase).toFixed(2)}</td></tr>`;
+                                    });
+                                    tableHtml += '</tbody></table>';
+                                    modalOrderItems.innerHTML = tableHtml;
+                                } else {
+                                    modalOrderItems.innerHTML = '<p>No items found for this order.</p>';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching order details:', error);
+                                modalOrderItems.innerHTML = '<p>Error loading order details.</p>';
+                            });
+
+                        document.getElementById('orderDetailsModal').style.display = 'flex';
+                    });
+                });
+            </script>
+        <?php endif; ?>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  
+    const avatarInput = document.getElementById('avatar-upload');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file.');
+                    this.value = '';
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) { 
+                    alert('File size must be less than 5MB.');
+                    this.value = '';
+                    return;
+                }
+                this.closest('form').submit();
+            }
+        });
+    }
+
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const fieldContainer = this.closest('.editable-field');
+            const displayElement = fieldContainer.querySelector('h1, p');
+
+            if (fieldContainer.querySelector('form')) {
+                return;
+            }
+
+            const originalValue = displayElement.dataset.value;
+            const isUsername = fieldContainer.id === 'username-field';
+            const inputType = isUsername ? 'input' : 'textarea';
+            const inputName = isUsername ? 'username' : 'description';
+
+            const form = document.createElement('form');
+            form.action = '/update_profile.php';
+            form.method = 'post';
+            form.style.width = '100%';
+
+            const input = document.createElement(inputType);
+            input.name = inputName;
+            input.className = isUsername ? 'input profile-username-input' : 'textarea';
+            input.value = originalValue;
+
+            form.appendChild(input);
+
+            if (isUsername) {
+                input.placeholder = 'Username...';
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        form.submit();
+                    }
+                    if (e.key === 'Escape') {
+                        window.location.reload();
+                    }
+                });
+                input.addEventListener('blur', function() {
+                    setTimeout(() => { if (document.body.contains(form)) { window.location.reload(); } }, 200);
+                });
+            } else {
+                input.rows = 4;
+                input.placeholder = '<?= t('no_description') ?>';
+
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.marginTop = '12px';
+                buttonContainer.style.display = 'flex';
+                buttonContainer.style.gap = '8px';
+
+                const saveButton = document.createElement('button');
+                saveButton.type = 'submit';
+                saveButton.className = "btn btn--outline";
+                saveButton.innerText = '<?= t('save') ?>';
+
+                const cancelButton = document.createElement('button');
+                cancelButton.type = 'button';
+                cancelButton.className = 'btn btn--outline';
+                cancelButton.innerText = '<?= t('cancel') ?>';
+
+                buttonContainer.appendChild(saveButton);
+                buttonContainer.appendChild(cancelButton);
+                form.appendChild(buttonContainer);
+
+                cancelButton.addEventListener('click', function() {
+                    window.location.reload();
+                });
+            }
+
+            fieldContainer.innerHTML = '';
+            fieldContainer.appendChild(form);
+            input.focus();
+
+            input.selectionStart = input.selectionEnd = input.value.length;
+        });
+    });
+});
+</script>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
